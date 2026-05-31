@@ -193,6 +193,20 @@
             background: #e4eff8;
             font-weight: 700;
             color: #1a4b6e;
+            transition: all 0.1s ease;
+        }
+        /* Динамическая подсветка остатка: красный при <40000, зелёный при >=40000 */
+        .material-field .readonly-value.low-stock {
+            background: #ffe5e5;
+            color: #b91c1c;
+            border: 1px solid #ffb3b3;
+            box-shadow: 0 0 0 1px rgba(185, 28, 28, 0.2);
+        }
+        .material-field .readonly-value.normal-stock {
+            background: #e0f5e6;
+            color: #166534;
+            border: 1px solid #a3e0b0;
+            box-shadow: 0 0 0 1px rgba(22, 101, 52, 0.2);
         }
 
         .stats-grid {
@@ -545,10 +559,15 @@
             </div>
         </div>
 
+        <!-- БЛОК МАТЕРИАЛОВ: добавлено поле ПРИХОД -->
         <div class="material-row">
             <div class="material-field">
                 <label>📦 ОСТАТОК МАТЕРИАЛА (НАЧАЛО)</label>
                 <input type="number" id="materialStart" value="50000" step="100" placeholder="шт/кг">
+            </div>
+            <div class="material-field">
+                <label>➕ ПРИХОД МАТЕРИАЛА</label>
+                <input type="number" id="materialIncome" value="0" step="100" placeholder="шт/кг">
             </div>
             <div class="material-field">
                 <label>⚠️ БРАК (шт)</label>
@@ -708,6 +727,7 @@
     const hourlyTbody = document.getElementById('hourlyTbody');
     const bodyEl = document.body;
     const materialStartInput = document.getElementById('materialStart');
+    const materialIncomeInput = document.getElementById('materialIncome');
     const defectAmountInput = document.getElementById('defectAmount');
     const materialEndInput = document.getElementById('materialEnd');
     const shiftSelect = document.getElementById('shiftSelect');
@@ -723,12 +743,29 @@
     const activeStopInfoDiv = document.getElementById('activeStopInfo');
     const reasonSection = document.getElementById('reasonSection');
     
+    // Функция для обновления стиля поля остатка (красный при <40000, зеленый при >=40000)
+    function updateMaterialEndColor() {
+        const endValue = parseFloat(materialEndInput.value) || 0;
+        // Удаляем старые классы
+        materialEndInput.classList.remove('low-stock', 'normal-stock');
+        if (endValue < 40000) {
+            materialEndInput.classList.add('low-stock');
+        } else {
+            materialEndInput.classList.add('normal-stock');
+        }
+    }
+    
+    // НОВАЯ ФУНКЦИЯ РАСЧЁТА ОСТАТКА с учётом прихода + обновление цвета
     function calculateMaterialEnd() {
         const fact = parseFloat(factTotalHidden.value) || 0;
         const defect = parseFloat(defectAmountInput.value) || 0;
         const start = parseFloat(materialStartInput.value) || 0;
-        const end = start - (fact + defect);
+        const income = parseFloat(materialIncomeInput.value) || 0;
+        // Формула: Остаток конец = Остаток начало + Приход - (Факт + Брак)
+        const end = start + income - (fact + defect);
         materialEndInput.value = end >= 0 ? end : 0;
+        // Обновляем цветовую индикацию
+        updateMaterialEndColor();
         autoSave();
         return materialEndInput.value;
     }
@@ -742,6 +779,7 @@
         factTotalDisplay.innerText = maxVal;
         factTotalHidden.value = maxVal;
         updateEfficiencyUI();
+        calculateMaterialEnd(); // Пересчитываем остаток при изменении факта
         autoSave();
         return maxVal;
     }
@@ -887,6 +925,7 @@
         const eff = efficiencySpan.innerText;
         const totalDowntime = totalDowntimeSec;
         const materialStart = materialStartInput.value;
+        const materialIncome = materialIncomeInput.value;
         const defect = defectAmountInput.value;
         const materialEnd = materialEndInput.value;
         
@@ -906,6 +945,7 @@
         rows.push([]);
         rows.push(["УЧЁТ МАТЕРИАЛОВ И БРАКА"]);
         rows.push(["Остаток материала (начало)", materialStart]);
+        rows.push(["Приход материала", materialIncome]);
         rows.push(["Брак (шт)", defect]);
         rows.push(["Остаток материала (конец)", materialEnd]);
         rows.push(["Расход материала (выпуск + брак)", (parseFloat(fact) + parseFloat(defect))]);
@@ -951,6 +991,7 @@
         lineSelect.value = 'KHS';
         nodeSelect.value = 'Розлив';
         materialStartInput.value = '50000';
+        materialIncomeInput.value = '0';
         defectAmountInput.value = '0';
         planInput.value = '48000';
         document.getElementById('machineSpeed').value = '4000';
@@ -970,6 +1011,7 @@
             lineSelect: lineSelect.value,
             nodeSelect: nodeSelect.value,
             materialStart: materialStartInput.value, 
+            materialIncome: materialIncomeInput.value,
             defectAmount: defectAmountInput.value, 
             planShift: planInput.value, 
             machineSpeed: document.getElementById('machineSpeed').value, 
@@ -996,6 +1038,7 @@
             lineSelect.value = s.lineSelect || 'KHS';
             nodeSelect.value = s.nodeSelect || 'Розлив';
             materialStartInput.value = s.materialStart || '50000';
+            materialIncomeInput.value = s.materialIncome || '0';
             defectAmountInput.value = s.defectAmount || '0';
             planInput.value = s.planShift || '48000';
             document.getElementById('machineSpeed').value = s.machineSpeed || '4000';
@@ -1023,6 +1066,7 @@
     modalCancelBtn.addEventListener('click', closeModal);
     planInput.addEventListener('input', () => { updateEfficiencyUI(); autoSave(); });
     materialStartInput.addEventListener('input', calculateMaterialEnd);
+    materialIncomeInput.addEventListener('input', calculateMaterialEnd);
     defectAmountInput.addEventListener('input', calculateMaterialEnd);
     shiftSelect.addEventListener('change', () => { rebuildHourlyTable(); updateFactFromHours(); calculateMaterialEnd(); autoSave(); });
     lineSelect.addEventListener('change', () => autoSave());
@@ -1048,6 +1092,8 @@
     updateTotalDowntimeUI();
     updateBodyBackground();
     renderStopsLog();
+    // Инициализация цвета при загрузке
+    updateMaterialEndColor();
 </script>
 </body>
 </html>
