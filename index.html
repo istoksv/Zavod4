@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>KHS Line | Святой источник — полный учёт</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #d4e4f5 0%, #c0d4e8 100%);
+            padding: 12px;
+            min-height: 100vh;
+            transition: background 0.2s ease;
+        }
+
+        body.line-stopped {
+            background: linear-gradient(135deg, #ffe8e8 0%, #ffd4d4 100%);
+        }
+
+        .app-card {
+            max-width: 550px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 36px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        /* ШАПКА — ТОЛЬКО ЛОГОТИП */
+        .header {
+            background: #d4e4f5;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 0;
+            background: transparent;
+            padding: 0;
+            box-shadow: none;
+            border: none;
+        }
+
+        .date-box {
+            background: rgba(26, 75, 110, 0.12);
+            padding: 8px 12px;
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.8rem;
+            margin: 12px 16px 4px 16px;
+        }
+        .date-box label {
+            font-weight: 500;
+            color: #1a4b6e;
+        }
+        .date-box input {
+            background: white;
+            border: 1px solid #b8cce0;
+            padding: 6px 12px;
+            border-radius: 32px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #1a4b6e;
+        }
+        .save-status {
+            font-size: 0.65rem;
+            background: rgba(26, 75, 110, 0.12);
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-align: center;
+            display: inline-block;
+            color: #1a4b6e;
+        }
+
+        .content {
+            padding: 8px 16px 24px;
+        }
+
+        /* НОВЫЕ ПОЛЯ: ЛИНИЯ И УЗЕЛ */
+        .line-node-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            background: #f0f6fc;
+            border-radius: 28px;
+            padding: 14px 16px;
+            border: 1px solid #c8dce8;
+        }
+        .line-node-field {
+            flex: 1;
+            min-width: 140px;
+        }
+        .line-node-field label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #1a4b6e;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .line-node-field select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 32px;
+            border: 1px solid #c8dce8;
+            font-size: 0.9rem;
+            background: white;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .info-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            background: #f0f6fc;
+            border-radius: 28px;
+            padding: 14px 16px;
+            border: 1px solid #c8dce8;
+        }
+        .info-field {
+            flex: 1;
+            min-width: 140px;
+        }
+        .info-field label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #1a4b6e;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .info-field input, .info-field select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 32px;
+            border: 1px solid #c8dce8;
+            font-size: 0.9rem;
+            background: white;
+            font-weight: 500;
+        }
+
+        .material-row {
+            background: #f0f6fc;
+            border-radius: 28px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            border: 1px solid #c8dce8;
+        }
+        .material-field {
+            flex: 1;
+            min-width: 110px;
+        }
+        .material-field label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #1a4b6e;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .material-field input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 32px;
+            border: 1px solid #c8dce8;
+            font-size: 0.9rem;
+            background: white;
+            font-weight: 500;
+        }
+        .material-field .readonly-value {
+            background: #e4eff8;
+            font-weight: 700;
+            color: #1a4b6e;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 14px 12px;
+            border: 1px solid #c8dce8;
+        }
+        .stat-card label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #1a4b6e;
+        }
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1a4b6e;
+            margin-top: 6px;
+        }
+        .stat-card input {
+            font-size: 1.3rem;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            width: 100%;
+            padding: 4px 0;
+            color: #1a4b6e;
+            outline: none;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1a4b6e;
+            margin: 18px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 3px solid #3a7ca8;
+            padding-left: 10px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #c8dce8;
+            background: white;
+        }
+        .hour-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            min-width: 280px;
+        }
+        .hour-table th {
+            background: #e4eff8;
+            padding: 10px 4px;
+            color: #1a4b6e;
+        }
+        .hour-table td {
+            padding: 8px 4px;
+            text-align: center;
+            border-bottom: 1px solid #e2edf2;
+        }
+        .hour-input {
+            width: 85px;
+            padding: 8px 6px;
+            text-align: center;
+            border: 1px solid #c8dce8;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        .hour-label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #1a4b6e;
+        }
+
+        .status-panel {
+            background: #eef4fa;
+            border-radius: 32px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 18px 0 16px;
+            border: 1px solid #c8dce8;
+        }
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 6px 16px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1a4b6e;
+        }
+        .timer-block {
+            font-family: monospace;
+            background: #1a4b6e;
+            padding: 6px 16px;
+            border-radius: 60px;
+            color: #e8f0f8;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0 18px;
+        }
+        button {
+            border: none;
+            font-weight: 700;
+            padding: 14px 16px;
+            border-radius: 60px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.1s;
+        }
+        .btn-start { background: #1a4b6e; color: white; }
+        .btn-stop { background: #c2412c; color: white; }
+        .btn-outline { background: white; border: 1.5px solid #1a4b6e; color: #1a4b6e; }
+        .btn-excel { background: #1a4b6e; color: white; }
+        .btn-reset { background: #f0f4f9; border: 1px solid #c8dce8; color: #c2412c; }
+
+        .log-area {
+            background: #fafeff;
+            border-radius: 24px;
+            border: 1px solid #c8dce8;
+            padding: 12px;
+            max-height: 240px;
+            overflow-y: auto;
+            margin-top: 8px;
+        }
+        .log-item {
+            border-left: 4px solid #c2412c;
+            background: #ffffff;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            border-radius: 18px;
+            font-size: 0.7rem;
+        }
+        .footer-note {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 20px;
+            color: #7a9cba;
+            padding-top: 14px;
+            border-top: 1px solid #c8dce8;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+        }
+        .modal-card {
+            background: white;
+            max-width: 450px;
+            width: 100%;
+            border-radius: 48px;
+            padding: 24px 20px;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.3);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal-card h3 {
+            font-size: 1.3rem;
+            color: #b13e2c;
+            margin-bottom: 12px;
+        }
+        .reason-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .reason-opt {
+            background: #f2f2f2;
+            border: none;
+            padding: 10px 6px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+            cursor: pointer;
+        }
+        .reason-opt.selected {
+            background: #cfe3f0;
+            border: 2px solid #1a4b6e;
+        }
+        .custom-reason-section {
+            margin: 16px 0;
+            border-top: 1px solid #e0e8e0;
+            padding-top: 16px;
+        }
+        .custom-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .custom-input-group input {
+            flex: 2;
+            padding: 10px 14px;
+            border-radius: 60px;
+            border: 1px solid #c8dce8;
+            font-size: 0.85rem;
+        }
+        .custom-input-group button {
+            flex: 1;
+            padding: 10px 12px;
+            background: #1a4b6e;
+            color: white;
+            font-size: 0.8rem;
+        }
+        .saved-notes-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .saved-note-btn {
+            background: #eef3fc;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            width: auto;
+            display: inline-flex;
+            cursor: pointer;
+        }
+        textarea {
+            width: 100%;
+            border-radius: 28px;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 0.85rem;
+            margin: 8px 0;
+            font-family: inherit;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+        }
+        .current-stop-info {
+            background: #eef3fc;
+            border-radius: 28px;
+            padding: 10px;
+            margin-bottom: 12px;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+        @media (max-width: 480px) {
+            .hour-input { width: 65px; }
+            .stat-card .value { font-size: 1.2rem; }
+            .reason-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-card">
+    <!-- ШАПКА: ЛОГОТИП -->
+    <div class="header">
+        <img src="https://svyatoyistochnik.com/local/templates/v1/assets/images/og_image.png" 
+             alt="Святой источник" 
+             class="logo-img"
+             onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'padding:20px; text-align:center; color:#1a4b6e; font-weight:bold;\'>СВЯТОЙ ИСТОЧНИК</div>'">
+    </div>
+    
+    <div class="content">
+        <div class="date-box">
+            <label>📅 Дата отчёта:</label>
+            <input type="date" id="reportDate" value="2026-05-31">
+            <div class="save-status" id="saveStatus">💾 Автосохранение</div>
+        </div>
+
+        <!-- НОВЫЕ ПОЛЯ: ВЫБОР ЛИНИИ И УЗЛА -->
+        <div class="line-node-row">
+            <div class="line-node-field">
+                <label>🏭 ЛИНИЯ</label>
+                <select id="lineSelect">
+                    <option value="KHS">KHS</option>
+                    <option value="KHS2">KHS2</option>
+                    <option value="KHS3">KHS3</option>
+                    <option value="KOSME">KOSME</option>
+                    <option value="Tech long">Tech long</option>
+                    <option value="APET">APET</option>
+                </select>
+            </div>
+            <div class="line-node-field">
+                <label>🔧 УЗЕЛ / СЕКЦИЯ</label>
+                <select id="nodeSelect">
+                    <option value="Розлив">Розлив</option>
+                    <option value="Этикетка">Этикетка</option>
+                    <option value="Упаковка">Упаковка</option>
+                    <option value="Паллетайзер">Паллетайзер</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-field">
+                <label>🏷️ ПРОДУКЦИЯ</label>
+                <input type="text" id="productName" placeholder="Например: Вода питьевая 0.5л" value="Вода «Святой источник»">
+            </div>
+            <div class="info-field">
+                <label>🕒 СМЕНА</label>
+                <select id="shiftSelect">
+                    <option value="day">🌞 ДЕНЬ (07:00 - 19:00)</option>
+                    <option value="night">🌙 НОЧЬ (19:00 - 07:00)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="material-row">
+            <div class="material-field">
+                <label>📦 ОСТАТОК МАТЕРИАЛА (НАЧАЛО)</label>
+                <input type="number" id="materialStart" value="50000" step="100" placeholder="шт/кг">
+            </div>
+            <div class="material-field">
+                <label>⚠️ БРАК (шт)</label>
+                <input type="number" id="defectAmount" value="0" step="10" placeholder="шт">
+            </div>
+            <div class="material-field">
+                <label>📦 ОСТАТОК МАТЕРИАЛА (КОНЕЦ)</label>
+                <input type="text" id="materialEnd" readonly class="readonly-value">
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><label>📋 ПЛАН (шт)</label><input type="number" id="planShift" value="48000" step="500"></div>
+            <div class="stat-card"><label>⚙️ СКОРОСТЬ (шт/ч)</label><input type="number" id="machineSpeed" value="4000" step="100"></div>
+            <div class="stat-card"><label>✅ ФАКТ (шт)</label><div class="value" id="factTotalDisplay">0</div><input type="hidden" id="factTotalHidden" value="0"></div>
+            <div class="stat-card"><label>📊 ЭФФЕКТИВНОСТЬ</label><div class="value" id="efficiencyPercent">0%</div></div>
+        </div>
+
+        <div class="section-title">⏱️ ПОЧАСОВАЯ ВЫРАБОТКА (нарастающий итог, шт)</div>
+        <div class="table-wrapper">
+            <table class="hour-table" id="hourlyTable">
+                <thead><tr><th>ЧАС</th><th>НАКОПЛЕНО, шт</th></tr></thead>
+                <tbody id="hourlyTbody"></tbody>
+            </table>
+        </div>
+        <div style="font-size:0.6rem; margin: 4px 0 0 12px; color:#7a9cba;" id="timeHint"></div>
+
+        <div class="status-panel">
+            <div class="status-row">
+                <div class="status-badge"><span id="statusIcon">🟢</span> <strong id="statusText">РАБОТАЕТ</strong></div>
+                <div><span style="font-size:0.7rem;">⏲️ Всего простоев</span><br><strong id="totalDowntimeDisplay">0 мин</strong></div>
+            </div>
+            <div class="status-row">
+                <span style="font-size:0.75rem;">⏱️ Текущий простой</span>
+                <span id="downtimeTimer" class="timer-block">00:00:00</span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button id="startLineBtn" class="btn-start">▶️ ЗАПУСТИТЬ ЛИНИЮ</button>
+            <button id="openStopModalBtn" class="btn-stop">⏹️ ОСТАНОВ (причина + коммент)</button>
+            <button id="calcEffBtn" class="btn-outline">📈 РАССЧИТАТЬ %</button>
+            <button id="exportExcelBtn" class="btn-excel">📎 EXCEL (отчёт за дату)</button>
+            <button id="resetSessionBtn" class="btn-reset">⟳ СБРОС СМЕНЫ (очистить всё)</button>
+        </div>
+
+        <div class="section-title">📋 ЖУРНАЛ ОСТАНОВОК</div>
+        <div id="stopsLog" class="log-area">— Нет записей —</div>
+        <div class="footer-note">🔴 При остановке фон красный. Данные автоматически сохраняются.</div>
+    </div>
+</div>
+
+<div id="stopModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3 id="modalTitle">⏸️ Остановка линии</h3>
+        <div id="activeStopInfo" class="current-stop-info" style="display: none;"></div>
+        <div id="reasonSection" class="reason-grid">
+            <button data-reason="Обрыв ДМ" class="reason-opt">🧵 Обрыв ДМ</button>
+            <button data-reason="Не прошла склейка" class="reason-opt">🔗 Не прошла склейка</button>
+            <button data-reason="Ремонт" class="reason-opt">🔧 Ремонт</button>
+            <button data-reason="ТО" class="reason-opt">🛠️ ТО</button>
+            <button data-reason="Потеря метки" class="reason-opt">🏷️ Потеря метки</button>
+            <button data-reason="Другое" class="reason-opt">📝 Другое</button>
+        </div>
+        <div class="custom-reason-section">
+            <div style="font-weight: 700; font-size: 0.75rem; color: #1a4b6e; margin-bottom: 8px;">📝 ЗАМЕТКИ (свои причины)</div>
+            <div class="custom-input-group">
+                <input type="text" id="newCustomReason" placeholder="Введите свою причину...">
+                <button id="saveCustomReasonBtn">💾 Сохранить</button>
+            </div>
+            <div id="savedReasonsList" class="saved-notes-list"></div>
+        </div>
+        <label>💬 Комментарий / дополнение:</label>
+        <textarea id="modalComment" rows="2" placeholder="Введите детали остановки или дополните существующий комментарий..."></textarea>
+        <div class="modal-buttons">
+            <button id="modalCancelBtn" style="background:#eef2f5;">Отмена</button>
+            <button id="modalActionBtn" style="background:#c2412c; color:white;">✅ Применить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== РАБОТА С ПОЛЬЗОВАТЕЛЬСКИМИ ПРИЧИНАМИ ==========
+    const CUSTOM_REASONS_KEY = 'KHS_custom_reasons';
+    
+    function loadCustomReasons() {
+        const saved = localStorage.getItem(CUSTOM_REASONS_KEY);
+        if (saved) {
+            try { return JSON.parse(saved); } catch(e) { return []; }
+        }
+        return [];
+    }
+    
+    function saveCustomReason(reason) {
+        let reasons = loadCustomReasons();
+        if (!reasons.includes(reason) && reason.trim() !== "") {
+            reasons.unshift(reason);
+            if (reasons.length > 12) reasons.pop();
+            localStorage.setItem(CUSTOM_REASONS_KEY, JSON.stringify(reasons));
+        }
+        renderCustomReasons();
+    }
+    
+    function deleteCustomReason(reason) {
+        let reasons = loadCustomReasons();
+        reasons = reasons.filter(r => r !== reason);
+        localStorage.setItem(CUSTOM_REASONS_KEY, JSON.stringify(reasons));
+        renderCustomReasons();
+    }
+    
+    function renderCustomReasons() {
+        const container = document.getElementById('savedReasonsList');
+        if (!container) return;
+        const reasons = loadCustomReasons();
+        if (reasons.length === 0) {
+            container.innerHTML = '<span style="font-size:0.65rem; color:#888;">Нет сохранённых заметок. Добавьте свою причину выше.</span>';
+            return;
+        }
+        container.innerHTML = '';
+        reasons.forEach(reason => {
+            const btn = document.createElement('button');
+            btn.textContent = reason;
+            btn.className = 'saved-note-btn';
+            btn.style.cssText = 'background:#fff; border:1px solid #c8dce8; cursor:pointer; padding:6px 12px; border-radius:40px; font-size:0.7rem; font-weight:500;';
+            btn.addEventListener('click', () => selectCustomReason(reason));
+            btn.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                if (confirm(`Удалить заметку "${reason}"?`)) deleteCustomReason(reason);
+            });
+            container.appendChild(btn);
+        });
+    }
+    
+    function selectCustomReason(reason) {
+        document.querySelectorAll('.reason-opt').forEach(btn => btn.classList.remove('selected'));
+        document.querySelectorAll('.saved-note-btn').forEach(btn => {
+            btn.style.background = btn.textContent === reason ? '#cfe3f0' : '#fff';
+            btn.style.border = btn.textContent === reason ? '2px solid #1a4b6e' : '1px solid #c8dce8';
+        });
+        pendingReason = reason;
+    }
+    
+    // ========== ОСНОВНОЙ СКРИПТ ==========
+    const STORAGE_KEY = 'KHS_line_full_data';
+    let isRunning = true, stopStartTime = null, currentDowntimeSec = 0, totalDowntimeSec = 0, timerInterval = null, stopsArray = [], activeStopId = null;
+    let pendingReason = null, isAppendMode = false;
+    
+    const planInput = document.getElementById('planShift');
+    const factTotalDisplay = document.getElementById('factTotalDisplay');
+    const factTotalHidden = document.getElementById('factTotalHidden');
+    const efficiencySpan = document.getElementById('efficiencyPercent');
+    const downtimeTimerSpan = document.getElementById('downtimeTimer');
+    const totalDowntimeSpan = document.getElementById('totalDowntimeDisplay');
+    const statusTextSpan = document.getElementById('statusText');
+    const statusIconSpan = document.getElementById('statusIcon');
+    const stopsLogDiv = document.getElementById('stopsLog');
+    const hourlyTbody = document.getElementById('hourlyTbody');
+    const bodyEl = document.body;
+    const materialStartInput = document.getElementById('materialStart');
+    const defectAmountInput = document.getElementById('defectAmount');
+    const materialEndInput = document.getElementById('materialEnd');
+    const shiftSelect = document.getElementById('shiftSelect');
+    const timeHintSpan = document.getElementById('timeHint');
+    const lineSelect = document.getElementById('lineSelect');
+    const nodeSelect = document.getElementById('nodeSelect');
+    
+    const modal = document.getElementById('stopModal');
+    const modalComment = document.getElementById('modalComment');
+    const modalActionBtn = document.getElementById('modalActionBtn');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalTitle = document.getElementById('modalTitle');
+    const activeStopInfoDiv = document.getElementById('activeStopInfo');
+    const reasonSection = document.getElementById('reasonSection');
+    
+    function calculateMaterialEnd() {
+        const fact = parseFloat(factTotalHidden.value) || 0;
+        const defect = parseFloat(defectAmountInput.value) || 0;
+        const start = parseFloat(materialStartInput.value) || 0;
+        const end = start - (fact + defect);
+        materialEndInput.value = end >= 0 ? end : 0;
+        autoSave();
+        return materialEndInput.value;
+    }
+    
+    function updateFactFromHours() {
+        let maxVal = 0;
+        document.querySelectorAll('#hourlyTbody input').forEach(inp => {
+            let v = parseInt(inp.value, 10);
+            if (!isNaN(v) && v > maxVal) maxVal = v;
+        });
+        factTotalDisplay.innerText = maxVal;
+        factTotalHidden.value = maxVal;
+        updateEfficiencyUI();
+        autoSave();
+        return maxVal;
+    }
+    
+    function updateEfficiencyUI() {
+        const plan = parseFloat(planInput.value);
+        const fact = parseFloat(factTotalHidden.value);
+        efficiencySpan.innerText = plan > 0 ? ((fact / plan) * 100).toFixed(2) + '%' : '0%';
+    }
+    
+    function updateTotalDowntimeUI() {
+        const minutes = Math.floor(totalDowntimeSec / 60);
+        totalDowntimeSpan.innerText = `${minutes} мин (${totalDowntimeSec} сек)`;
+        autoSave();
+    }
+    
+    function updateTimerDisplay() {
+        if (!isRunning && stopStartTime) {
+            const elapsed = Math.floor((Date.now() - stopStartTime) / 1000) + currentDowntimeSec;
+            downtimeTimerSpan.innerText = `${Math.floor(elapsed/3600).toString().padStart(2,'0')}:${Math.floor((elapsed%3600)/60).toString().padStart(2,'0')}:${(elapsed%60).toString().padStart(2,'0')}`;
+        } else downtimeTimerSpan.innerText = '00:00:00';
+    }
+    
+    function startTimerIntervalFn() { if (timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { updateTimerDisplay(); autoSave(); }, 1000); }
+    
+    function renderStopsLog() {
+        if (stopsArray.length === 0) { stopsLogDiv.innerHTML = '— Нет остановок —'; return; }
+        let html = '';
+        [...stopsArray].reverse().forEach(stop => {
+            const durationStr = stop.durationSec !== null ? `${stop.durationSec} сек (${(stop.durationSec/60).toFixed(1)} мин)` : '⏳ в процессе';
+            html += `<div class="log-item"><strong>⛔ ${stop.reason}</strong> | ${stop.startTimeStr} → ${stop.endTimeStr || 'активный'}<br>📝 ${escapeHtml(stop.fullComment || stop.comment)}<br>⏱️ ${durationStr}</div>`;
+        });
+        stopsLogDiv.innerHTML = html;
+        autoSave();
+    }
+    
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+    function updateBodyBackground() { if (!isRunning) bodyEl.classList.add('line-stopped'); else bodyEl.classList.remove('line-stopped'); }
+    
+    function startLine() {
+        if (isRunning) return;
+        if (stopStartTime && activeStopId !== null) {
+            const elapsed = Math.floor((Date.now() - stopStartTime) / 1000) + currentDowntimeSec;
+            totalDowntimeSec += elapsed;
+            updateTotalDowntimeUI();
+            if (stopsArray[activeStopId]) {
+                stopsArray[activeStopId].durationSec = elapsed;
+                stopsArray[activeStopId].endTimeStr = new Date().toLocaleTimeString();
+            }
+            activeStopId = null; stopStartTime = null; currentDowntimeSec = 0;
+        }
+        isRunning = true;
+        statusTextSpan.innerText = "РАБОТАЕТ"; statusIconSpan.innerText = "🟢";
+        updateBodyBackground(); updateTimerDisplay(); renderStopsLog(); autoSave();
+    }
+    
+    function createNewStop(reason, commentText) {
+        if (!isRunning) { alert("Линия уже остановлена! Нажмите ЗАПУСК."); return false; }
+        isRunning = false; stopStartTime = Date.now(); currentDowntimeSec = 0;
+        statusTextSpan.innerText = "ОСТАНОВЛЕНА"; statusIconSpan.innerText = "🔴";
+        updateBodyBackground();
+        const stopRecord = { reason, comment: commentText.trim() || "—", startTimeStr: new Date().toLocaleTimeString(), endTimeStr: null, durationSec: null, fullComment: commentText.trim() || "—", timestamp: new Date().toISOString() };
+        stopsArray.push(stopRecord);
+        activeStopId = stopsArray.length - 1;
+        renderStopsLog(); autoSave();
+        return true;
+    }
+    
+    function appendToActiveStop(extraText) {
+        if (activeStopId === null) { alert("Нет активной остановки."); return false; }
+        if (!extraText.trim()) { alert("Введите текст."); return false; }
+        const stop = stopsArray[activeStopId];
+        stop.fullComment = (stop.fullComment || stop.comment) + " | доп.: " + extraText;
+        stop.comment = stop.fullComment;
+        renderStopsLog(); autoSave();
+        return true;
+    }
+    
+    function openStopModal() {
+        if (isRunning) {
+            isAppendMode = false;
+            modalTitle.innerText = "⏸️ Новая остановка линии";
+            activeStopInfoDiv.style.display = "none";
+            reasonSection.style.display = "grid";
+            pendingReason = null;
+            modalComment.value = "";
+            document.querySelectorAll('.reason-opt').forEach(btn => btn.classList.remove('selected'));
+            renderCustomReasons();
+            modal.style.display = "flex";
+        } else {
+            if (activeStopId === null) { alert("Ошибка: нет активной остановки."); return; }
+            isAppendMode = true;
+            modalTitle.innerText = "✏️ Дополнить комментарий";
+            activeStopInfoDiv.style.display = "block";
+            activeStopInfoDiv.innerHTML = `⏹️ Текущая остановка: <strong>${stopsArray[activeStopId].reason}</strong><br>Комментарий: «${escapeHtml(stopsArray[activeStopId].fullComment || stopsArray[activeStopId].comment)}»`;
+            reasonSection.style.display = "none";
+            modalComment.value = "";
+            modal.style.display = "flex";
+        }
+    }
+    
+    function closeModal() { modal.style.display = "none"; }
+    
+    function handleModalAction() {
+        if (isAppendMode) {
+            const extra = modalComment.value.trim();
+            if (!extra) { alert("Введите текст."); return; }
+            if (appendToActiveStop(extra)) closeModal();
+        } else {
+            if (!pendingReason) { alert("Выберите причину остановки!"); return; }
+            if (createNewStop(pendingReason, modalComment.value)) closeModal();
+        }
+    }
+    
+    function getHourLabels() {
+        const shift = shiftSelect.value;
+        const hours = [];
+        if (shift === 'day') for (let i = 7; i <= 18; i++) hours.push(`${i}:00 - ${i+1}:00`);
+        else { for (let i = 19; i <= 23; i++) hours.push(`${i}:00 - ${i+1}:00`); for (let i = 0; i <= 6; i++) hours.push(`${i}:00 - ${i+1}:00`); }
+        return hours;
+    }
+    
+    function rebuildHourlyTable() {
+        hourlyTbody.innerHTML = '';
+        const labels = getHourLabels();
+        timeHintSpan.innerText = shiftSelect.value === 'day' ? '📌 Дневная смена: 07:00 → 19:00' : '📌 Ночная смена: 19:00 → 07:00';
+        for (let i = 0; i < 12; i++) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><span class="hour-label">${labels[i]}</span></td><td><input type="number" class="hour-input" value="0" min="0" step="100"></td>`;
+            tr.querySelector('input').addEventListener('change', () => { updateFactFromHours(); calculateMaterialEnd(); });
+            hourlyTbody.appendChild(tr);
+        }
+    }
+    
+    function exportToExcel() {
+        const date = document.getElementById('reportDate').value;
+        const product = document.getElementById('productName').value;
+        const shift = shiftSelect.value === 'day' ? 'ДЕНЬ (07:00-19:00)' : 'НОЧЬ (19:00-07:00)';
+        const line = lineSelect.value;
+        const node = nodeSelect.value;
+        const plan = planInput.value;
+        const fact = factTotalHidden.value;
+        const eff = efficiencySpan.innerText;
+        const totalDowntime = totalDowntimeSec;
+        const materialStart = materialStartInput.value;
+        const defect = defectAmountInput.value;
+        const materialEnd = materialEndInput.value;
+        
+        const rows = [];
+        rows.push([`ОТЧЕТ KHS - Святой источник | ДАТА: ${date}`]);
+        rows.push([]);
+        rows.push(["ОБЩАЯ ИНФОРМАЦИЯ"]);
+        rows.push(["Линия", line]);
+        rows.push(["Узел/секция", node]);
+        rows.push(["Продукция", product]);
+        rows.push(["Смена", shift]);
+        rows.push([]);
+        rows.push(["ПРОИЗВОДСТВЕННЫЕ ПОКАЗАТЕЛИ"]);
+        rows.push(["План смены (шт)", plan]);
+        rows.push(["Факт (шт)", fact]);
+        rows.push(["Эффективность", eff]);
+        rows.push([]);
+        rows.push(["УЧЁТ МАТЕРИАЛОВ И БРАКА"]);
+        rows.push(["Остаток материала (начало)", materialStart]);
+        rows.push(["Брак (шт)", defect]);
+        rows.push(["Остаток материала (конец)", materialEnd]);
+        rows.push(["Расход материала (выпуск + брак)", (parseFloat(fact) + parseFloat(defect))]);
+        rows.push([]);
+        rows.push(["ПРОСТОИ ЛИНИИ"]);
+        rows.push(["Общее время простоя (сек)", totalDowntime]);
+        rows.push(["Общее время простоя (мин)", (totalDowntime/60).toFixed(1)]);
+        rows.push([]);
+        rows.push(["ДЕТАЛИ ОСТАНОВОК:"]);
+        rows.push(["Причина", "Время начала", "Время конца", "Длительность (сек)", "Развернутый комментарий"]);
+        stopsArray.forEach(s => {
+            rows.push([
+                s.reason,
+                s.startTimeStr,
+                s.endTimeStr || "активный",
+                s.durationSec !== null ? s.durationSec : "в процессе",
+                s.fullComment || s.comment
+            ]);
+        });
+        rows.push([]);
+        rows.push(["ПОЧАСОВАЯ ВЫРАБОТКА (накопленный факт, шт):"]);
+        const hourInputs = document.querySelectorAll('#hourlyTbody input');
+        const labels = getHourLabels();
+        for (let i = 0; i < hourInputs.length; i++) {
+            rows.push([labels[i], hourInputs[i].value]);
+        }
+        
+        let csv = rows.map(row => Array.isArray(row) ? row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(";") : `"${row.replace(/"/g, '""')}"`).join("\n");
+        const blob = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8"});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `KHS_${line}_${date}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+    
+    function fullReset() {
+        if (!confirm("⚠️ Очистить все данные смены?")) return;
+        if (timerInterval) clearInterval(timerInterval);
+        isRunning = true; stopStartTime = null; currentDowntimeSec = 0; totalDowntimeSec = 0; stopsArray = []; activeStopId = null;
+        document.getElementById('productName').value = 'Вода «Святой источник»';
+        shiftSelect.value = 'day';
+        lineSelect.value = 'KHS';
+        nodeSelect.value = 'Розлив';
+        materialStartInput.value = '50000';
+        defectAmountInput.value = '0';
+        planInput.value = '48000';
+        document.getElementById('machineSpeed').value = '4000';
+        document.getElementById('reportDate').value = new Date().toISOString().slice(0,10);
+        document.querySelectorAll('#hourlyTbody input').forEach(inp => inp.value = '0');
+        updateFactFromHours(); calculateMaterialEnd(); updateTotalDowntimeUI(); updateTimerDisplay(); renderStopsLog();
+        statusTextSpan.innerText = "РАБОТАЕТ"; statusIconSpan.innerText = "🟢";
+        updateBodyBackground(); startTimerIntervalFn(); localStorage.removeItem(STORAGE_KEY); autoSave();
+    }
+    
+    function autoSave() { saveAllData(); }
+    function saveAllData() {
+        const hourValues = Array.from(document.querySelectorAll('#hourlyTbody input')).map(inp => inp.value);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
+            productName: document.getElementById('productName').value, 
+            shiftSelect: shiftSelect.value,
+            lineSelect: lineSelect.value,
+            nodeSelect: nodeSelect.value,
+            materialStart: materialStartInput.value, 
+            defectAmount: defectAmountInput.value, 
+            planShift: planInput.value, 
+            machineSpeed: document.getElementById('machineSpeed').value, 
+            reportDate: document.getElementById('reportDate').value, 
+            hourValues, 
+            isRunning, 
+            totalDowntimeSec, 
+            stopsArray, 
+            activeStopId, 
+            stopStartTime, 
+            currentDowntimeSec 
+        }));
+        document.getElementById('saveStatus').innerHTML = '💾 Сохранено!';
+        setTimeout(() => document.getElementById('saveStatus').innerHTML = '💾 Автосохранение', 1500);
+    }
+    
+    function loadAllData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return false;
+        try {
+            const s = JSON.parse(saved);
+            document.getElementById('productName').value = s.productName || 'Вода «Святой источник»';
+            shiftSelect.value = s.shiftSelect || 'day';
+            lineSelect.value = s.lineSelect || 'KHS';
+            nodeSelect.value = s.nodeSelect || 'Розлив';
+            materialStartInput.value = s.materialStart || '50000';
+            defectAmountInput.value = s.defectAmount || '0';
+            planInput.value = s.planShift || '48000';
+            document.getElementById('machineSpeed').value = s.machineSpeed || '4000';
+            document.getElementById('reportDate').value = s.reportDate || new Date().toISOString().slice(0,10);
+            if (s.hourValues) document.querySelectorAll('#hourlyTbody input').forEach((inp, i) => inp.value = s.hourValues[i] || '0');
+            isRunning = s.isRunning !== undefined ? s.isRunning : true;
+            totalDowntimeSec = s.totalDowntimeSec || 0;
+            stopsArray = s.stopsArray || [];
+            activeStopId = s.activeStopId !== undefined ? s.activeStopId : null;
+            stopStartTime = s.stopStartTime || null;
+            currentDowntimeSec = s.currentDowntimeSec || 0;
+            updateStatusUI(); updateFactFromHours(); calculateMaterialEnd(); updateTotalDowntimeUI(); renderStopsLog(); updateBodyBackground();
+            return true;
+        } catch(e) { return false; }
+    }
+    function updateStatusUI() { statusTextSpan.innerText = isRunning ? "РАБОТАЕТ" : "ОСТАНОВЛЕНА"; statusIconSpan.innerText = isRunning ? "🟢" : "🔴"; updateTimerDisplay(); }
+    
+    document.getElementById('startLineBtn').addEventListener('click', startLine);
+    document.getElementById('openStopModalBtn').addEventListener('click', openStopModal);
+    document.getElementById('calcEffBtn').addEventListener('click', () => { updateFactFromHours(); calculateMaterialEnd(); alert(`Эффективность: ${efficiencySpan.innerText}`); });
+    document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+    document.getElementById('resetSessionBtn').addEventListener('click', fullReset);
+    document.getElementById('saveCustomReasonBtn').addEventListener('click', () => { const r = document.getElementById('newCustomReason').value.trim(); if (r) { saveCustomReason(r); document.getElementById('newCustomReason').value = ''; } });
+    modalActionBtn.addEventListener('click', handleModalAction);
+    modalCancelBtn.addEventListener('click', closeModal);
+    planInput.addEventListener('input', () => { updateEfficiencyUI(); autoSave(); });
+    materialStartInput.addEventListener('input', calculateMaterialEnd);
+    defectAmountInput.addEventListener('input', calculateMaterialEnd);
+    shiftSelect.addEventListener('change', () => { rebuildHourlyTable(); updateFactFromHours(); calculateMaterialEnd(); autoSave(); });
+    lineSelect.addEventListener('change', () => autoSave());
+    nodeSelect.addEventListener('change', () => autoSave());
+    document.getElementById('productName').addEventListener('input', autoSave);
+    document.getElementById('reportDate').addEventListener('change', autoSave);
+    document.getElementById('machineSpeed').addEventListener('input', autoSave);
+    window.onclick = (e) => { if (e.target === modal) closeModal(); };
+    document.querySelectorAll('.reason-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (isAppendMode) return;
+            document.querySelectorAll('.reason-opt').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.querySelectorAll('.saved-note-btn').forEach(b => { b.style.background = '#fff'; b.style.border = '1px solid #c8dce8'; });
+            pendingReason = btn.getAttribute('data-reason');
+        });
+    });
+    
+    rebuildHourlyTable();
+    renderCustomReasons();
+    if (!loadAllData()) { updateFactFromHours(); calculateMaterialEnd(); }
+    startTimerIntervalFn();
+    updateTotalDowntimeUI();
+    updateBodyBackground();
+    renderStopsLog();
+</script>
+</body>
+</html>
