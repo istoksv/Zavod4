@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>KHS Line + Стикерометр | Полный учёт</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #d4e4f5 0%, #c0d4e8 100%);
+            padding: 12px;
+            min-height: 100vh;
+            transition: background 0.2s ease;
+        }
+
+        body.line-stopped {
+            background: linear-gradient(135deg, #ffe8e8 0%, #ffd4d4 100%);
+        }
+
+        .app-card {
+            max-width: 650px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 36px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #d4e4f5;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 0;
+            background: transparent;
+            padding: 0;
+            box-shadow: none;
+            border: none;
+        }
+
+        .tabs {
+            display: flex;
+            background: #eef4fa;
+            border-bottom: 1px solid #c8dce8;
+        }
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1a4b6e;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 0;
+        }
+        .tab-btn.active {
+            background: white;
+            color: #1a4b6e;
+            border-bottom: 3px solid #1a4b6e;
+        }
+        .tab-content {
+            display: none;
+            padding: 8px 16px 24px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .date-box {
+            background: rgba(26, 75, 110, 0.12);
+            padding: 8px 12px;
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.8rem;
+            margin: 12px 0 4px 0;
+        }
+        .date-box label {
+            font-weight: 500;
+            color: #1a4b6e;
+        }
+        .date-box input {
+            background: white;
+            border: 1px solid #b8cce0;
+            padding: 6px 12px;
+            border-radius: 32px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #1a4b6e;
+        }
+        .save-status {
+            font-size: 0.65rem;
+            background: rgba(26, 75, 110, 0.12);
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-align: center;
+            display: inline-block;
+            color: #1a4b6e;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .operator-row, .line-node-row, .expiry-row, .info-row, .material-row {
+            background: #f0f6fc;
+            border-radius: 28px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 1px solid #c8dce8;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .operator-row label {
+            font-weight: 700;
+            color: #1a4b6e;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .operator-row input {
+            flex: 2;
+            min-width: 180px;
+            padding: 10px 14px;
+            border-radius: 40px;
+            border: 1px solid #b8cce0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: white;
+        }
+        .line-node-field, .expiry-field, .info-field, .material-field {
+            flex: 1;
+            min-width: 130px;
+        }
+        .line-node-field label, .expiry-field label, .info-field label, .material-field label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #1a4b6e;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .line-node-field select, .expiry-field input, .info-field input, .info-field select, .material-field input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 32px;
+            border: 1px solid #c8dce8;
+            font-size: 0.9rem;
+            background: white;
+            font-weight: 500;
+        }
+        .material-field .readonly-value {
+            background: #e4eff8;
+            font-weight: 700;
+        }
+        .material-field .readonly-value.low-stock {
+            background: #ffe5e5;
+            color: #b91c1c;
+            border: 1px solid #ffb3b3;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 14px 12px;
+            border: 1px solid #c8dce8;
+        }
+        .stat-card label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #1a4b6e;
+        }
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1a4b6e;
+            margin-top: 6px;
+        }
+        .stat-card input {
+            font-size: 1.3rem;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            width: 100%;
+            padding: 4px 0;
+            color: #1a4b6e;
+            outline: none;
+        }
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1a4b6e;
+            margin: 18px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 3px solid #3a7ca8;
+            padding-left: 10px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #c8dce8;
+            background: white;
+        }
+        .hour-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            min-width: 280px;
+        }
+        .hour-table th {
+            background: #e4eff8;
+            padding: 10px 4px;
+            color: #1a4b6e;
+        }
+        .hour-table td {
+            padding: 8px 4px;
+            text-align: center;
+            border-bottom: 1px solid #e2edf2;
+        }
+        .hour-input {
+            width: 85px;
+            padding: 8px 6px;
+            text-align: center;
+            border: 1px solid #c8dce8;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        .status-panel {
+            background: #eef4fa;
+            border-radius: 32px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 18px 0 16px;
+            border: 1px solid #c8dce8;
+        }
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 6px 16px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1a4b6e;
+        }
+        .timer-block {
+            font-family: monospace;
+            background: #1a4b6e;
+            padding: 6px 16px;
+            border-radius: 60px;
+            color: #e8f0f8;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0 18px;
+        }
+        button {
+            border: none;
+            font-weight: 700;
+            padding: 14px 16px;
+            border-radius: 60px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.1s;
+        }
+        .btn-start { background: #1a4b6e; color: white; }
+        .btn-stop { background: #c2412c; color: white; }
+        .btn-custom-stop { background: #e67e22; color: white; }
+        .btn-excel { background: #2e7d32; color: white; }
+        .btn-reset { background: #f0f4f9; border: 1px solid #c8dce8; color: #c2412c; }
+        .log-area {
+            background: #fafeff;
+            border-radius: 24px;
+            border: 1px solid #c8dce8;
+            padding: 12px;
+            max-height: 340px;
+            overflow-y: auto;
+            margin-top: 8px;
+        }
+        .log-item {
+            background: #ffffff;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            border-left: 4px solid #c2412c;
+        }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .log-comment {
+            margin: 8px 0 6px;
+            color: #2c3e4e;
+            background: #f8fafc;
+            padding: 6px 10px;
+            border-radius: 16px;
+        }
+        .comment-btn {
+            background: #eef2f5;
+            border: 1px solid #bdd4e0;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: auto;
+            display: inline-flex;
+        }
+        .footer-note {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 20px;
+            color: #7a9cba;
+            padding-top: 14px;
+            border-top: 1px solid #c8dce8;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+        }
+        .modal-card {
+            background: white;
+            max-width: 500px;
+            width: 100%;
+            border-radius: 48px;
+            padding: 24px 20px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .reason-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .reason-opt {
+            background: #f2f2f2;
+            border: none;
+            padding: 10px 6px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+        }
+        .reason-opt.selected { background: #cfe3f0; border: 2px solid #1a4b6e; }
+        .custom-reason-section {
+            margin: 16px 0;
+            border-top: 1px solid #e0e8e0;
+            padding-top: 16px;
+        }
+        .custom-input-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .custom-input-group input {
+            flex: 2;
+            padding: 10px 14px;
+            border-radius: 60px;
+            border: 1px solid #c8dce8;
+        }
+        .saved-notes-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .saved-note-btn {
+            background: #fff;
+            border: 1px solid #c8dce8;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .time-row {
+            display: flex;
+            gap: 12px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+        .time-field {
+            flex: 1;
+        }
+        .time-field label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #1a4b6e;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .time-field input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 32px;
+            border: 1px solid #c8dce8;
+            font-size: 0.85rem;
+        }
+        textarea {
+            width: 100%;
+            border-radius: 28px;
+            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 0.85rem;
+            margin: 8px 0;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .sticker-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 16px;
+            margin: 12px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .sticker-input-group {
+            background: #f0f6fc;
+            border-radius: 28px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+        }
+        .dual {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fbfe;
+            border-radius: 60px;
+            padding: 4px 14px;
+            border: 1px solid #cde0ed;
+        }
+        .field {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            background: white;
+            padding: 4px 12px;
+            border-radius: 40px;
+            flex: 1;
+        }
+        .field label { font-size: 0.6rem; font-weight: 700; color: #5681a0; }
+        .field input { border: none; background: transparent; font-size: 1rem; font-weight: 600; width: 80px; text-align: center; outline: none; }
+        .result-area {
+            background: linear-gradient(115deg, #123845, #1f556b);
+            border-radius: 28px;
+            padding: 18px 16px;
+            margin-bottom: 18px;
+            text-align: center;
+            color: white;
+        }
+        .result-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            font-family: monospace;
+            background: rgba(255,240,200,0.12);
+            display: inline-block;
+            padding: 4px 20px;
+            border-radius: 60px;
+        }
+        .params-block {
+            background: #f0f7fc;
+            border-radius: 24px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+        }
+        .param-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .param-input {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            background: white;
+            padding: 4px 14px;
+            border-radius: 40px;
+            border: 1px solid #cde0ed;
+        }
+        .param-input input { width: 90px; text-align: center; border: none; background: transparent; font-weight: 600; }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+        }
+        .stat {
+            background: #f0f5fa;
+            border-radius: 30px;
+            padding: 4px 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #1f5e7a;
+            text-align: center;
+            flex: 1;
+        }
+        @media (max-width: 480px) {
+            .hour-input { width: 65px; }
+            .result-number { font-size: 1.5rem; }
+            .stat-card .value { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-card">
+    <div class="header">
+        <img src="https://svyatoyistochnik.com/local/templates/v1/assets/images/og_image.png" 
+             alt="Святой источник" class="logo-img"
+             onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'padding:20px; text-align:center; color:#1a4b6e; font-weight:bold;\'>СВЯТОЙ ИСТОЧНИК</div>'">
+    </div>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="khs">🏭 Учёт линии</button>
+        <button class="tab-btn" data-tab="sticker">🏷️ Стикерометр (по весу)</button>
+    </div>
+
+    <div id="khsTab" class="tab-content active">
+        <div class="date-box">
+            <label>📅 Дата отчёта:</label>
+            <input type="date" id="reportDate" value="2026-06-05">
+            <div class="save-status" id="saveStatus">💾</div>
+        </div>
+        <div class="operator-row">
+            <label>👤 ФИО ОПЕРАТОРА:</label>
+            <input type="text" id="operatorName" placeholder="Иванов Иван Иванович" value="">
+        </div>
+        <div class="line-node-row">
+            <div class="line-node-field"><label>🏭 ЛИНИЯ</label><select id="lineSelect"><option value="KHS">KHS</option><option value="KHS2">KHS2</option><option value="KOSME">KOSME</option><option value="Tech long">Tech long</option><option value="APET">APET</option></select></div>
+            <div class="line-node-field"><label>🔧 УЗЕЛ / СЕКЦИЯ</label><select id="nodeSelect"><option value="Розлив">Розлив</option><option value="Этикетка">Этикетка</option><option value="Упаковка">Упаковка</option><option value="Паллетайзер">Паллетайзер</option></select></div>
+        </div>
+        <div class="expiry-row">
+            <div class="expiry-field"><label>📅 СРОК ГОДНОСТИ (ОТ)</label><input type="text" id="expiryFrom" placeholder="дд.мм.гггг" value="01.06.2026"></div>
+            <div class="expiry-field"><label>📅 СРОК ГОДНОСТИ (ДО)</label><input type="text" id="expiryTo" placeholder="дд.мм.гггг" value="01.06.2027"></div>
+        </div>
+        <div class="info-row">
+            <div class="info-field"><label>🏷️ ПРОДУКЦИЯ</label><input type="text" id="productName" value="Вода «Святой источник»"></div>
+            <div class="info-field"><label>🕒 СМЕНА</label><select id="shiftSelect"><option value="day">🌞 ДЕНЬ (07:00-19:00)</option><option value="night">🌙 НОЧЬ (19:00-07:00)</option></select></div>
+        </div>
+        <div class="material-row">
+            <div class="material-field"><label>📦 ОСТАТОК МАТЕРИАЛА (НАЧАЛО)</label><input type="number" id="materialStart" value="50000" step="100"></div>
+            <div class="material-field"><label>➕ ПРИХОД МАТЕРИАЛА</label><input type="number" id="materialIncome" value="0" step="100"></div>
+            <div class="material-field"><label>⚠️ БРАК (шт)</label><input type="number" id="defectAmount" value="0" step="10"></div>
+            <div class="material-field"><label>📦 ОСТАТОК МАТЕРИАЛА (КОНЕЦ)</label><input type="text" id="materialEnd" readonly class="readonly-value"></div>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card"><label>📋 ПЛАН (шт)</label><input type="number" id="planShift" value="48000" step="500"></div>
+            <div class="stat-card"><label>⚙️ СКОРОСТЬ (шт/ч)</label><input type="number" id="machineSpeed" value="4000" step="100"></div>
+            <div class="stat-card"><label>✅ ФАКТ (шт)</label><div class="value" id="factTotalDisplay">0</div><input type="hidden" id="factTotalHidden" value="0"></div>
+            <div class="stat-card"><label>📊 ЭФФЕКТИВНОСТЬ</label><div class="value" id="efficiencyPercent">0%</div></div>
+        </div>
+        <div class="section-title">⏱️ ПОЧАСОВАЯ ВЫРАБОТКА (нарастающий итог, шт)</div>
+        <div class="table-wrapper"><table class="hour-table"><thead><tr><th>ЧАС</th><th>НАКОПЛЕНО, шт</th></tr></thead><tbody id="hourlyTbody"></tbody></table></div>
+        <div class="status-panel">
+            <div class="status-row"><div class="status-badge"><span id="statusIcon">🟢</span> <strong id="statusText">РАБОТАЕТ</strong></div><div><span style="font-size:0.7rem;">⏲️ Всего простоев</span><br><strong id="totalDowntimeDisplay">0 мин</strong></div></div>
+            <div class="status-row"><span style="font-size:0.75rem;">⏱️ Текущий простой</span><span id="downtimeTimer" class="timer-block">00:00:00</span></div>
+        </div>
+        <div class="action-buttons">
+            <button id="startLineBtn" class="btn-start">▶️ ЗАПУСТИТЬ ЛИНИЮ</button>
+            <button id="openStopModalBtn" class="btn-stop">⏹️ ОСТАНОВ (сейчас + коммент)</button>
+            <button id="openCustomStopModalBtn" class="btn-custom-stop">📅 СОЗДАТЬ ОСТАНОВКУ ЛИНИИ (выбрать время)</button>
+            <button id="exportHtmlBtn" class="btn-excel">📄 HTML-ОТЧЁТ (с печатью и Excel внутри)</button>
+            <button id="resetSessionBtn" class="btn-reset">⟳ СБРОС СМЕНЫ</button>
+        </div>
+        <div class="section-title">📋 ЖУРНАЛ ОСТАНОВОК</div>
+        <div id="stopsLog" class="log-area">— Нет записей —</div>
+        <div class="footer-note">🔴 Остановки фиксируются в журнале и отчётах. Кнопка "СОЗДАТЬ ОСТАНОВКУ" позволяет указать произвольный период.</div>
+    </div>
+
+    <div id="stickerTab" class="tab-content">
+        <div class="sticker-card">
+            <div class="sticker-input-group">
+                <div class="label">⚖️ Текущий вес рулона (с втулкой)</div>
+                <div class="dual">
+                    <div class="field"><label>кг</label><input type="number" id="stickerKg" value="5.66" step="0.01"></div>
+                    <div class="sep">+</div>
+                    <div class="field"><label>г</label><input type="number" id="stickerGram" value="0" step="1"></div>
+                </div>
+            </div>
+            <div class="result-area">
+                <div class="result-label">📌 ОСТАТОК СТИКЕРОВ</div>
+                <div class="result-number" id="stickerRemaining">—</div>
+                <div class="result-hint" id="stickerMsg">введите вес рулона</div>
+            </div>
+            <div class="params-block">
+                <div class="param-row"><div class="param-label">🏷️ Масса 1 стикера:</div><div class="param-input"><input type="number" id="weightPerSticker" value="0.0366667" step="0.0001"><span>г</span></div></div>
+                <div class="param-row"><div class="param-label">🔄 Вес пустой втулки:</div><div class="param-input"><input type="number" id="coreWeight" value="10" step="1"><span>г</span></div></div>
+            </div>
+            <div class="stats">
+                <div class="stat">🧷 нетто (стикеры): <strong id="netWeight">—</strong> кг</div>
+                <div class="stat">📊 округление: вниз (floor)</div>
+            </div>
+            <div class="footer-note small">⚡ Без лимита по количеству! (текущий вес − втулка) / вес 1 стикера → целые штуки.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка для быстрой остановки (сейчас) -->
+<div id="stopModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3 id="modalTitle">⏸️ Остановка линии</h3>
+        <div id="activeStopInfo" class="current-stop-info" style="display: none;"></div>
+        <div id="reasonSection" class="reason-grid">
+            <button data-reason="Обрыв ДМ" class="reason-opt">🧵 Обрыв ДМ</button>
+            <button data-reason="Не прошла склейка" class="reason-opt">🔗 Не прошла склейка</button>
+            <button data-reason="Ремонт" class="reason-opt">🔧 Ремонт</button>
+            <button data-reason="ТО" class="reason-opt">🛠️ ТО</button>
+            <button data-reason="Потеря метки" class="reason-opt">🏷️ Потеря метки</button>
+            <button data-reason="Другое" class="reason-opt">📝 Другое</button>
+        </div>
+        <div class="custom-reason-section">
+            <div style="font-weight: 700; font-size: 0.75rem;">📝 Свои причины</div>
+            <div class="custom-input-group"><input type="text" id="newCustomReason" placeholder="Новая причина"><button id="saveCustomReasonBtn">💾 Сохранить</button></div>
+            <div id="savedReasonsList" class="saved-notes-list"></div>
+        </div>
+        <label>💬 Комментарий / дополнение:</label>
+        <textarea id="modalComment" rows="2" placeholder="Введите детали..."></textarea>
+        <div class="modal-buttons"><button id="modalCancelBtn" style="background:#eef2f5;">Отмена</button><button id="modalActionBtn" style="background:#c2412c; color:white;">✅ Применить</button></div>
+    </div>
+</div>
+
+<!-- Модалка для произвольной остановки (выбор времени) -->
+<div id="customStopModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>📅 Создать остановку линии (произвольное время)</h3>
+        <div class="time-row">
+            <div class="time-field"><label>⏱️ Начало остановки:</label><input type="datetime-local" id="customStopStart"></div>
+            <div class="time-field"><label>⏱️ Конец остановки:</label><input type="datetime-local" id="customStopEnd"></div>
+        </div>
+        <div class="reason-grid" id="customReasonSection">
+            <button data-reason="Обрыв ДМ" class="reason-opt">🧵 Обрыв ДМ</button>
+            <button data-reason="Не прошла склейка" class="reason-opt">🔗 Не прошла склейка</button>
+            <button data-reason="Ремонт" class="reason-opt">🔧 Ремонт</button>
+            <button data-reason="ТО" class="reason-opt">🛠️ ТО</button>
+            <button data-reason="Потеря метки" class="reason-opt">🏷️ Потеря метки</button>
+            <button data-reason="Другое" class="reason-opt">📝 Другое</button>
+        </div>
+        <div class="custom-reason-section">
+            <div style="font-weight: 700; font-size: 0.75rem;">📝 Свои причины</div>
+            <div class="custom-input-group"><input type="text" id="newCustomReason2" placeholder="Новая причина"><button id="saveCustomReasonBtn2">💾 Сохранить</button></div>
+            <div id="savedReasonsList2" class="saved-notes-list"></div>
+        </div>
+        <label>💬 Комментарий / описание:</label>
+        <textarea id="customStopComment" rows="2" placeholder="Введите детали остановки..."></textarea>
+        <div class="modal-buttons"><button id="customStopCancelBtn" style="background:#eef2f5;">Отмена</button><button id="customStopApplyBtn" style="background:#e67e22; color:white;">✅ Добавить остановку</button></div>
+    </div>
+</div>
+
+<script>
+(function(){
+    if(typeof XLSX==="undefined"){
+        var script = document.createElement('script');
+        script.src = "https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js";
+        document.head.appendChild(script);
+    }
+
+    const STORAGE_KEY='KHS_line_full_data_v6';
+    let isRunning=true, stopStartTime=null, currentDowntimeSec=0, totalDowntimeSec=0, timerInterval=null, stopsArray=[], activeStopId=null;
+    let pendingReason=null, isAppendMode=false, appendToStoppedId=null;
+    
+    // DOM элементы
+    const planInput=document.getElementById('planShift'), factTotalDisplay=document.getElementById('factTotalDisplay'), factTotalHidden=document.getElementById('factTotalHidden');
+    const efficiencySpan=document.getElementById('efficiencyPercent'), downtimeTimerSpan=document.getElementById('downtimeTimer');
+    const totalDowntimeSpan=document.getElementById('totalDowntimeDisplay'), statusTextSpan=document.getElementById('statusText'), statusIconSpan=document.getElementById('statusIcon');
+    const stopsLogDiv=document.getElementById('stopsLog'), hourlyTbody=document.getElementById('hourlyTbody'), bodyEl=document.body;
+    const materialStartInput=document.getElementById('materialStart'), materialIncomeInput=document.getElementById('materialIncome'), defectAmountInput=document.getElementById('defectAmount'), materialEndInput=document.getElementById('materialEnd');
+    const shiftSelect=document.getElementById('shiftSelect'), lineSelect=document.getElementById('lineSelect'), nodeSelect=document.getElementById('nodeSelect'), expiryFrom=document.getElementById('expiryFrom'), expiryTo=document.getElementById('expiryTo'), operatorNameInput=document.getElementById('operatorName');
+
+    function updateMaterialEndColor(){const val=parseFloat(materialEndInput.value)||0; materialEndInput.classList.remove('low-stock','normal-stock'); if(val<40000) materialEndInput.classList.add('low-stock'); else materialEndInput.classList.add('normal-stock');}
+    function calculateMaterialEnd(){const fact=parseFloat(factTotalHidden.value)||0, defect=parseFloat(defectAmountInput.value)||0, start=parseFloat(materialStartInput.value)||0, income=parseFloat(materialIncomeInput.value)||0; const end=start+income-(fact+defect); materialEndInput.value=end>=0?end:0; updateMaterialEndColor(); autoSave(); return materialEndInput.value;}
+    function updateFactFromHours(){let max=0; document.querySelectorAll('#hourlyTbody input').forEach(inp=>{let v=parseInt(inp.value,10); if(!isNaN(v)&&v>max) max=v;}); factTotalDisplay.innerText=max; factTotalHidden.value=max; updateEfficiencyUI(); calculateMaterialEnd(); autoSave(); return max;}
+    function updateEfficiencyUI(){const plan=parseFloat(planInput.value), fact=parseFloat(factTotalHidden.value); efficiencySpan.innerText=plan>0?((fact/plan)*100).toFixed(2)+'%':'0%';}
+    function updateTotalDowntimeUI(){const totalSec = stopsArray.reduce((sum, s) => sum + (s.durationSec || 0), 0); totalDowntimeSec = totalSec; totalDowntimeSpan.innerText=`${Math.floor(totalSec/60)} мин (${totalSec} сек)`; autoSave();}
+    function updateTimerDisplay(){if(!isRunning&&stopStartTime){const elapsed=Math.floor((Date.now()-stopStartTime)/1000)+currentDowntimeSec; downtimeTimerSpan.innerText=`${Math.floor(elapsed/3600).toString().padStart(2,'0')}:${Math.floor((elapsed%3600)/60).toString().padStart(2,'0')}:${(elapsed%60).toString().padStart(2,'0')}`;}else downtimeTimerSpan.innerText='00:00:00';}
+    function startTimerIntervalFn(){if(timerInterval) clearInterval(timerInterval); timerInterval=setInterval(()=>{updateTimerDisplay(); autoSave();},1000);}
+    function escapeHtml(str){if(!str) return ''; return str.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+    function updateBodyBackground(){if(!isRunning) bodyEl.classList.add('line-stopped'); else bodyEl.classList.remove('line-stopped');}
+    function startLine(){if(isRunning) return; if(stopStartTime&&activeStopId!==null){const elapsed=Math.floor((Date.now()-stopStartTime)/1000)+currentDowntimeSec; if(stopsArray[activeStopId]){stopsArray[activeStopId].durationSec=elapsed; stopsArray[activeStopId].endTimeStr=new Date().toLocaleTimeString();} activeStopId=null; stopStartTime=null; currentDowntimeSec=0; updateTotalDowntimeUI();} isRunning=true; statusTextSpan.innerText="РАБОТАЕТ"; statusIconSpan.innerText="🟢"; updateBodyBackground(); updateTimerDisplay(); renderStopsLog(); autoSave();}
+    function createNewStop(reason,commentText){if(!isRunning){alert("Линия уже остановлена!"); return false;} isRunning=false; stopStartTime=Date.now(); currentDowntimeSec=0; statusTextSpan.innerText="ОСТАНОВЛЕНА"; statusIconSpan.innerText="🔴"; updateBodyBackground(); const stopRecord={reason,comment:commentText.trim()||"—",startTimeStr:new Date().toLocaleTimeString(),endTimeStr:null,durationSec:null,fullComment:commentText.trim()||"—",timestamp:new Date().toISOString()}; stopsArray.push(stopRecord); activeStopId=stopsArray.length-1; renderStopsLog(); autoSave(); return true;}
+    function addManualStop(reason, startDateTime, endDateTime, commentText){
+        const startDate = new Date(startDateTime);
+        const endDate = new Date(endDateTime);
+        if(isNaN(startDate) || isNaN(endDate) || endDate <= startDate){ alert("Укажите корректные дату и время (начало < конец)"); return false; }
+        const durationSec = Math.floor((endDate - startDate) / 1000);
+        const startTimeStr = startDate.toLocaleTimeString() + " " + startDate.toLocaleDateString();
+        const endTimeStr = endDate.toLocaleTimeString() + " " + endDate.toLocaleDateString();
+        const stopRecord = {
+            reason: reason,
+            comment: commentText.trim() || "—",
+            startTimeStr: startTimeStr,
+            endTimeStr: endTimeStr,
+            durationSec: durationSec,
+            fullComment: commentText.trim() || "—",
+            timestamp: new Date().toISOString(),
+            isManual: true
+        };
+        stopsArray.push(stopRecord);
+        updateTotalDowntimeUI();
+        renderStopsLog();
+        autoSave();
+        alert(`Остановка добавлена! Длительность: ${Math.floor(durationSec/60)} мин ${durationSec%60} сек`);
+        return true;
+    }
+    function appendCommentToStop(stopIndex,extraText){if(stopIndex<0||stopIndex>=stopsArray.length) return false; const stop=stopsArray[stopIndex]; const old=stop.fullComment||stop.comment||""; const newPart=extraText.trim(); if(!newPart) return false; stop.fullComment=old+" | ✏️ "+newPart; stop.comment=stop.fullComment; renderStopsLog(); autoSave(); return true;}
+    function renderStopsLog(){if(stopsArray.length===0){stopsLogDiv.innerHTML='— Нет остановок —'; return;} let html=''; stopsArray.slice().reverse().forEach((stop,idx)=>{const originalIndex=stopsArray.length-1-idx; const durationStr=stop.durationSec!==null?`${stop.durationSec} сек (${(stop.durationSec/60).toFixed(1)} мин)`:'⏳ в процессе'; html+=`<div class="log-item"><div class="log-header"><span><strong>⛔ ${escapeHtml(stop.reason)}</strong> <span>${stop.startTimeStr} → ${stop.endTimeStr||'активный'}</span></span><span>⏱️ ${durationStr}</span></div><div class="log-comment">📝 ${escapeHtml(stop.fullComment||stop.comment)}</div><button class="comment-btn" data-idx="${originalIndex}">✏️ Добавить комментарий</button></div>`;}); stopsLogDiv.innerHTML=html; document.querySelectorAll('.comment-btn').forEach(btn=>{btn.addEventListener('click',(e)=>{e.stopPropagation(); const idx=parseInt(btn.getAttribute('data-idx'),10); if(!isNaN(idx)) openAppendCommentForStopped(idx);});});}
+    function openAppendCommentForStopped(stopIndex){appendToStoppedId=stopIndex; isAppendMode=true; document.getElementById('modalTitle').innerText="✏️ Дополнить комментарий к остановке"; const stop=stopsArray[stopIndex]; document.getElementById('activeStopInfo').style.display="block"; document.getElementById('activeStopInfo').innerHTML=`⏹️ Остановка: <strong>${escapeHtml(stop.reason)}</strong><br>Текущий комментарий: «${escapeHtml(stop.fullComment||stop.comment)}»`; document.getElementById('reasonSection').style.display="none"; document.getElementById('modalComment').value=""; document.getElementById('stopModal').style.display="flex";}
+    function openStopModal(){isAppendMode=false; appendToStoppedId=null; document.getElementById('modalTitle').innerText="⏸️ Новая остановка линии"; document.getElementById('activeStopInfo').style.display="none"; document.getElementById('reasonSection').style.display="grid"; pendingReason=null; document.getElementById('modalComment').value=""; document.querySelectorAll('.reason-opt').forEach(btn=>btn.classList.remove('selected')); renderCustomReasons(); document.getElementById('stopModal').style.display="flex";}
+    function closeModal(){document.getElementById('stopModal').style.display="none"; document.getElementById('customStopModal').style.display="none"; appendToStoppedId=null; isAppendMode=false;}
+    function handleModalAction(){if(isAppendMode&&appendToStoppedId!==null){const extra=document.getElementById('modalComment').value.trim(); if(!extra){alert("Введите текст комментария"); return;} if(appendCommentToStop(appendToStoppedId,extra)) closeModal();}else if(!isAppendMode){if(!pendingReason){alert("Выберите причину остановки!"); return;} if(createNewStop(pendingReason,document.getElementById('modalComment').value)) closeModal();}else{closeModal();}}
+    function getHourLabels(){const shift=shiftSelect.value; const hours=[]; if(shift==='day') for(let i=7;i<=18;i++) hours.push(`${i}:00 - ${i+1}:00`); else{for(let i=19;i<=23;i++) hours.push(`${i}:00 - ${i+1}:00`); for(let i=0;i<=6;i++) hours.push(`${i}:00 - ${i+1}:00`);} return hours;}
+    function rebuildHourlyTable(){hourlyTbody.innerHTML=''; const labels=getHourLabels(); for(let i=0;i<12;i++){const tr=document.createElement('tr'); tr.innerHTML=`<td><span class="hour-label">${labels[i]}</span></td><td><input type="number" class="hour-input" value="0" min="0" step="100"><tr>`; tr.querySelector('input').addEventListener('change',()=>{updateFactFromHours(); calculateMaterialEnd();}); hourlyTbody.appendChild(tr);}}
+    
+    function generateReportHTML(){
+        const date=document.getElementById('reportDate').value;
+        const operator=operatorNameInput.value.trim()||"Не указан";
+        const product=document.getElementById('productName').value;
+        const shift=shiftSelect.value==='day'?'ДЕНЬ (07:00-19:00)':'НОЧЬ (19:00-07:00)';
+        const line=lineSelect.value;
+        const node=nodeSelect.value;
+        const plan=planInput.value;
+        const fact=factTotalHidden.value;
+        const eff=efficiencySpan.innerText;
+        const totalDowntime=stopsArray.reduce((s,st)=>s+(st.durationSec||0),0);
+        const materialStart=materialStartInput.value;
+        const materialIncome=materialIncomeInput.value;
+        const defect=defectAmountInput.value;
+        const materialEnd=materialEndInput.value;
+        const expiryFromVal=expiryFrom.value.trim()||"не указан";
+        const expiryToVal=expiryTo.value.trim()||"не указан";
+        const hourInputs=document.querySelectorAll('#hourlyTbody input');
+        const hourLabels=getHourLabels();
+        const speed=document.getElementById('machineSpeed').value;
+        let stopsRows='';
+        stopsArray.forEach(s=>{
+            stopsRows+=`<tr><td>${escapeHtml(s.reason)}</td><td>${s.startTimeStr}</td><td>${s.endTimeStr||'активен'}</td><td>${s.durationSec??'...'}</td><td>${escapeHtml(s.fullComment||s.comment)}</td></tr>`;
+        });
+        let hourRows='';
+        for(let i=0;i<hourInputs.length;i++) hourRows+=`<tr><td>${hourLabels[i]}</td><td>${hourInputs[i].value||0}</td></tr>`;
+        
+        const hourValues = Array.from(hourInputs).map(inp => inp.value || "0");
+        const stopsData = stopsArray.map(s => ({
+            reason: s.reason,
+            start: s.startTimeStr,
+            end: s.endTimeStr || "активный",
+            duration: s.durationSec ?? "...",
+            comment: (s.fullComment || s.comment || "").replace(/"/g, '""')
+        }));
+        
+        // Формируем название отчёта: "Отчёт KOSME этикетка"
+        const reportTitle = `Отчёт ${line} ${node}`;
+        
+        // Экранируем все строковые переменные для безопасной вставки в JavaScript
+        const safeOperator = (operator || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeProduct = (product || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeShift = (shift || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeLine = (line || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeNode = (node || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeExpiryFrom = (expiryFromVal || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeExpiryTo = (expiryToVal || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeReportTitle = (reportTitle || "").replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        
+        return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${reportTitle}_${date}</title><style>body{font-family:'Segoe UI',sans-serif;margin:20px;background:#f5f9fe;}h1{color:#1a4b6e;border-left:5px solid #1a4b6e;padding-left:18px;}.section{background:#eef4fc;padding:16px;margin-top:16px;border-radius:20px;border-left:6px solid #1a4b6e;}table{border-collapse:collapse;width:100%;margin-top:10px;}th{background:#1a4b6e;color:white;padding:10px;}td{border:1px solid #b0c4de;padding:8px;}.operator{font-weight:bold;background:#e9f0f9;display:inline-block;padding:4px 12px;border-radius:40px;}.report-actions{display:flex;gap:16px;margin:20px 0;flex-wrap:wrap;}.report-btn{background:#1a4b6e;color:white;border:none;padding:12px 24px;border-radius:60px;font-weight:bold;cursor:pointer;font-size:1rem;display:inline-flex;align-items:center;gap:8px;}.report-btn.excel{background:#2e7d32;}.report-btn.print{background:#ff8c00;}</style><script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"><\/script></head><body><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;"><h1>📋 ${reportTitle}</h1><div class="report-actions"><button class="report-btn print" onclick="window.print();">🖨️ Печать отчета</button><button class="report-btn excel" id="inlineExcelBtn">📎 Excel (XLSX)</button></div></div><p><strong>Дата:</strong> ${date} &nbsp;|&nbsp; <strong>Оператор:</strong> <span class="operator">${escapeHtml(operator)}</span></p><div class='section'><h3>🏭 Общая информация</h3><p>Линия: ${line} | Узел: ${node}<br>Продукция: ${product} | Смена: ${shift}<br>Срок годности: ${expiryFromVal} — ${expiryToVal}</p></div><div class='section'><h3>⚙️ Производство</h3><p>План: ${plan} шт | Факт: ${fact} шт | Эффективность: ${eff}<br>Скорость: ${speed} шт/ч</p></div><div class='section'><h3>📦 Материалы и брак</h3><p>Остаток начало: ${materialStart} | +Приход: ${materialIncome} | Брак: ${defect} | Остаток конец: ${materialEnd}</p></div><div class='section'><h3>⏱️ Простои линии</h3><p>Всего простоев: ${Math.floor(totalDowntime/60)} мин (${totalDowntime} сек)</p>${stopsArray.length?`<table class="data-table"><thead><tr><th>Причина</th><th>Начало</th><th>Конец</th><th>Длит.(сек)</th><th>Комментарий</th></tr></thead><tbody>${stopsRows}</tbody></table>`:'<p>— Нет остановок —</p>'}</div><div class='section'><h3>📊 Почасовая выработка (накопленный факт)</h3><table class="data-table"><thead><tr><th>Час</th><th>Накоплено, шт</th></tr></thead><tbody>${hourRows}</tbody></table></div><div style="margin-top:30px;text-align:center;font-size:11px;color:#6c8eae;">Отчет сгенерирован системой KHS Line | Святой источник</div><script>
+        (function(){
+            var excelBtn = document.getElementById('inlineExcelBtn');
+            if(!excelBtn) return;
+            
+            excelBtn.addEventListener('click', function(e){
+                e.preventDefault();
+                
+                if(typeof XLSX === "undefined"){
+                    alert("Библиотека Excel ещё не загружена. Пожалуйста, подождите и попробуйте снова.");
+                    return;
+                }
+                
+                var reportData = {
+                    date: "${date}",
+                    operator: "${safeOperator}",
+                    line: "${safeLine}",
+                    node: "${safeNode}",
+                    product: "${safeProduct}",
+                    shift: "${safeShift}",
+                    expiryFrom: "${safeExpiryFrom}",
+                    expiryTo: "${safeExpiryTo}",
+                    plan: "${plan}",
+                    fact: "${fact}",
+                    efficiency: "${eff}",
+                    speed: "${speed}",
+                    materialStart: "${materialStart}",
+                    materialIncome: "${materialIncome}",
+                    defect: "${defect}",
+                    materialEnd: "${materialEnd}",
+                    totalDowntime: ${totalDowntime},
+                    hourLabels: ${JSON.stringify(hourLabels)},
+                    hourValues: ${JSON.stringify(hourValues)},
+                    stops: ${JSON.stringify(stopsData)},
+                    reportTitle: "${safeReportTitle}"
+                };
+                
+                var data = [];
+                data.push([reportData.reportTitle, "Дата: " + reportData.date]);
+                data.push(["ФИО оператора", reportData.operator]);
+                data.push(["Линия", reportData.line]);
+                data.push(["Узел/секция", reportData.node]);
+                data.push(["Продукция", reportData.product]);
+                data.push(["Смена", reportData.shift]);
+                data.push(["Срок годности от", reportData.expiryFrom]);
+                data.push(["Срок годности до", reportData.expiryTo]);
+                data.push([]);
+                data.push(["ПРОИЗВОДСТВЕННЫЕ ПОКАЗАТЕЛИ"]);
+                data.push(["План (шт)", reportData.plan]);
+                data.push(["Факт (шт)", reportData.fact]);
+                data.push(["Эффективность", reportData.efficiency]);
+                data.push(["Скорость (шт/ч)", reportData.speed]);
+                data.push([]);
+                data.push(["МАТЕРИАЛЫ И БРАК"]);
+                data.push(["Остаток материала (начало)", reportData.materialStart]);
+                data.push(["Приход материала", reportData.materialIncome]);
+                data.push(["Брак (шт)", reportData.defect]);
+                data.push(["Остаток материала (конец)", reportData.materialEnd]);
+                data.push([]);
+                data.push(["ПРОСТОИ ЛИНИИ"]);
+                data.push(["Общее время простоя (сек)", reportData.totalDowntime]);
+                data.push(["Общее время простоя (мин)", (reportData.totalDowntime/60).toFixed(1)]);
+                data.push([]);
+                data.push(["ДЕТАЛИ ОСТАНОВОК"]);
+                data.push(["Причина","Начало","Конец","Длит.(сек)","Комментарий"]);
+                for(var i = 0; i < reportData.stops.length; i++) {
+                    var s = reportData.stops[i];
+                    data.push([s.reason, s.start, s.end, s.duration, s.comment]);
+                }
+                data.push([]);
+                data.push(["ПОЧАСОВАЯ ВЫРАБОТКА (накопленный факт, шт)"]);
+                data.push(["Часовой интервал","Накоплено, шт"]);
+                for(var j = 0; j < reportData.hourLabels.length; j++) {
+                    data.push([reportData.hourLabels[j], reportData.hourValues[j] || "0"]);
+                }
+                
+                try {
+                    var ws = XLSX.utils.aoa_to_sheet(data);
+                    ws['!cols'] = [{wch:35},{wch:25}];
+                    var wb = XLSX.utils.book_new();
+                    var sheetName = (reportData.line + "_" + reportData.node).substring(0, 31);
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                    var fileName = reportData.line + "_" + reportData.node + "_" + reportData.date + "_" + reportData.operator.replace(/[\\s\\/\\\\:*?<>|]/g,'_').substring(0,30) + ".xlsx";
+                    XLSX.writeFile(wb, fileName);
+                    alert("Excel-файл успешно создан!");
+                } catch(err) {
+                    alert("Ошибка при создании Excel: " + err.message);
+                }
+            });
+        })();
+    <\/script></body></html>`;
+    }
+    
+    function exportHtmlReport(){ const html=generateReportHTML(); const blob=new Blob([html],{type:"text/html"}); const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download=`${lineSelect.value}_${nodeSelect.value}_${document.getElementById('reportDate').value}_report.html`; link.click(); URL.revokeObjectURL(link.href); alert("HTML-отчёт сохранён. Внутри есть кнопки печати и Excel."); }
+    function fullReset(){if(!confirm("Очистить все данные смены?")) return; if(timerInterval) clearInterval(timerInterval); isRunning=true; stopStartTime=null; currentDowntimeSec=0; stopsArray=[]; activeStopId=null; materialStartInput.value='50000'; materialIncomeInput.value='0'; defectAmountInput.value='0'; planInput.value='48000'; document.getElementById('machineSpeed').value='4000'; document.getElementById('reportDate').value=new Date().toISOString().slice(0,10); expiryFrom.value='01.06.2026'; expiryTo.value='01.06.2027'; operatorNameInput.value=''; document.querySelectorAll('#hourlyTbody input').forEach(inp=>inp.value='0'); updateFactFromHours(); calculateMaterialEnd(); updateTotalDowntimeUI(); updateTimerDisplay(); renderStopsLog(); statusTextSpan.innerText="РАБОТАЕТ"; statusIconSpan.innerText="🟢"; updateBodyBackground(); startTimerIntervalFn(); localStorage.removeItem(STORAGE_KEY); autoSave();}
+    function autoSave(){const hourValues=Array.from(document.querySelectorAll('#hourlyTbody input')).map(inp=>inp.value); localStorage.setItem(STORAGE_KEY,JSON.stringify({productName:document.getElementById('productName').value,shiftSelect:shiftSelect.value,lineSelect:lineSelect.value,nodeSelect:nodeSelect.value,materialStart:materialStartInput.value,materialIncome:materialIncomeInput.value,defectAmount:defectAmountInput.value,planShift:planInput.value,machineSpeed:document.getElementById('machineSpeed').value,reportDate:document.getElementById('reportDate').value,expiryFrom:expiryFrom.value,expiryTo:expiryTo.value,operatorName:operatorNameInput.value,hourValues,isRunning,stopsArray,activeStopId,stopStartTime,currentDowntimeSec}));}
+    function loadAllData(){const saved=localStorage.getItem(STORAGE_KEY); if(!saved) return false; try{const s=JSON.parse(saved); document.getElementById('productName').value=s.productName||'Вода «Святой источник»'; shiftSelect.value=s.shiftSelect||'day'; lineSelect.value=s.lineSelect||'KHS'; nodeSelect.value=s.nodeSelect||'Розлив'; materialStartInput.value=s.materialStart||'50000'; materialIncomeInput.value=s.materialIncome||'0'; defectAmountInput.value=s.defectAmount||'0'; planInput.value=s.planShift||'48000'; document.getElementById('machineSpeed').value=s.machineSpeed||'4000'; document.getElementById('reportDate').value=s.reportDate||new Date().toISOString().slice(0,10); expiryFrom.value=s.expiryFrom||'01.06.2026'; expiryTo.value=s.expiryTo||'01.06.2027'; operatorNameInput.value=s.operatorName||''; if(s.hourValues) document.querySelectorAll('#hourlyTbody input').forEach((inp,i)=>inp.value=s.hourValues[i]||'0'); isRunning=s.isRunning!==undefined?s.isRunning:true; stopsArray=s.stopsArray||[]; activeStopId=s.activeStopId!==undefined?s.activeStopId:null; stopStartTime=s.stopStartTime||null; currentDowntimeSec=s.currentDowntimeSec||0; updateStatusUI(); updateFactFromHours(); calculateMaterialEnd(); updateTotalDowntimeUI(); renderStopsLog(); updateBodyBackground(); return true;}catch(e){return false;}}
+    function updateStatusUI(){statusTextSpan.innerText=isRunning?"РАБОТАЕТ":"ОСТАНОВЛЕНА"; statusIconSpan.innerText=isRunning?"🟢":"🔴"; updateTimerDisplay();}
+    
+    const CUSTOM_REASONS_KEY='KHS_custom_reasons'; 
+    function loadCustomReasons(){const saved=localStorage.getItem(CUSTOM_REASONS_KEY); if(saved) try{return JSON.parse(saved);}catch(e){return [];} return [];}
+    function saveCustomReason(reason){let reasons=loadCustomReasons(); if(!reasons.includes(reason)&&reason.trim()!==""){reasons.unshift(reason); if(reasons.length>12) reasons.pop(); localStorage.setItem(CUSTOM_REASONS_KEY,JSON.stringify(reasons));} renderCustomReasons(); renderCustomReasons2();}
+    function deleteCustomReason(reason){let reasons=loadCustomReasons().filter(r=>r!==reason); localStorage.setItem(CUSTOM_REASONS_KEY,JSON.stringify(reasons)); renderCustomReasons(); renderCustomReasons2();}
+    function renderCustomReasons(){const container=document.getElementById('savedReasonsList'); if(!container) return; const reasons=loadCustomReasons(); container.innerHTML=''; reasons.forEach(reason=>{const btn=document.createElement('button'); btn.textContent=reason; btn.className='saved-note-btn'; btn.addEventListener('click',()=>{pendingReason=reason; document.querySelectorAll('#reasonSection .reason-opt').forEach(b=>b.classList.remove('selected')); btn.style.background='#cfe3f0'; btn.style.border='2px solid #1a4b6e';}); btn.addEventListener('contextmenu',(e)=>{e.preventDefault(); if(confirm(`Удалить "${reason}"?`)) deleteCustomReason(reason);}); container.appendChild(btn);});}
+    function renderCustomReasons2(){const container=document.getElementById('savedReasonsList2'); if(!container) return; const reasons=loadCustomReasons(); container.innerHTML=''; reasons.forEach(reason=>{const btn=document.createElement('button'); btn.textContent=reason; btn.className='saved-note-btn'; btn.addEventListener('click',()=>{pendingReason2=reason; document.querySelectorAll('#customReasonSection .reason-opt').forEach(b=>b.classList.remove('selected')); btn.style.background='#cfe3f0'; btn.style.border='2px solid #1a4b6e';}); btn.addEventListener('contextmenu',(e)=>{e.preventDefault(); if(confirm(`Удалить "${reason}"?`)) deleteCustomReason(reason);}); container.appendChild(btn);});}
+    
+    let pendingReason2=null;
+    document.getElementById('startLineBtn').addEventListener('click',startLine);
+    document.getElementById('openStopModalBtn').addEventListener('click',openStopModal);
+    document.getElementById('exportHtmlBtn').addEventListener('click',exportHtmlReport);
+    document.getElementById('resetSessionBtn').addEventListener('click',fullReset);
+    document.getElementById('saveCustomReasonBtn').addEventListener('click',()=>{const r=document.getElementById('newCustomReason').value.trim(); if(r){saveCustomReason(r); document.getElementById('newCustomReason').value='';}});
+    document.getElementById('saveCustomReasonBtn2').addEventListener('click',()=>{const r=document.getElementById('newCustomReason2').value.trim(); if(r){saveCustomReason(r); document.getElementById('newCustomReason2').value='';}});
+    document.getElementById('modalActionBtn').addEventListener('click',handleModalAction);
+    document.getElementById('modalCancelBtn').addEventListener('click',closeModal);
+    
+    const customStopModal = document.getElementById('customStopModal');
+    document.getElementById('openCustomStopModalBtn').addEventListener('click',()=>{
+        const now = new Date();
+        const nowStr = now.toISOString().slice(0,16);
+        const oneHourLater = new Date(now.getTime() + 3600000).toISOString().slice(0,16);
+        document.getElementById('customStopStart').value = nowStr;
+        document.getElementById('customStopEnd').value = oneHourLater;
+        document.getElementById('customStopComment').value = '';
+        pendingReason2 = null;
+        document.querySelectorAll('#customReasonSection .reason-opt').forEach(btn=>btn.classList.remove('selected'));
+        customStopModal.style.display = 'flex';
+    });
+    document.getElementById('customStopCancelBtn').addEventListener('click',()=>{ customStopModal.style.display = 'none'; });
+    document.getElementById('customStopApplyBtn').addEventListener('click',()=>{
+        if(!pendingReason2){ alert("Выберите причину остановки!"); return; }
+        const startVal = document.getElementById('customStopStart').value;
+        const endVal = document.getElementById('customStopEnd').value;
+        const comment = document.getElementById('customStopComment').value;
+        if(!startVal || !endVal){ alert("Укажите дату и время начала и конца остановки"); return; }
+        addManualStop(pendingReason2, startVal, endVal, comment);
+        customStopModal.style.display = 'none';
+    });
+    document.querySelectorAll('#customReasonSection .reason-opt').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+            document.querySelectorAll('#customReasonSection .reason-opt').forEach(b=>b.classList.remove('selected'));
+            btn.classList.add('selected');
+            pendingReason2 = btn.getAttribute('data-reason');
+        });
+    });
+    
+    planInput.addEventListener('input',()=>{updateEfficiencyUI(); autoSave();});
+    materialStartInput.addEventListener('input',calculateMaterialEnd); materialIncomeInput.addEventListener('input',calculateMaterialEnd); defectAmountInput.addEventListener('input',calculateMaterialEnd);
+    shiftSelect.addEventListener('change',()=>{rebuildHourlyTable(); updateFactFromHours(); calculateMaterialEnd(); autoSave();});
+    lineSelect.addEventListener('change',autoSave); nodeSelect.addEventListener('change',autoSave); expiryFrom.addEventListener('change',autoSave); expiryTo.addEventListener('change',autoSave);
+    operatorNameInput.addEventListener('input',autoSave); document.getElementById('productName').addEventListener('input',autoSave); document.getElementById('reportDate').addEventListener('change',autoSave); document.getElementById('machineSpeed').addEventListener('input',autoSave);
+    window.onclick=(e)=>{if(e.target===document.getElementById('stopModal')) closeModal(); if(e.target===customStopModal) customStopModal.style.display='none';};
+    document.querySelectorAll('#reasonSection .reason-opt').forEach(btn=>{btn.addEventListener('click',()=>{if(isAppendMode&&appendToStoppedId!==null) return; document.querySelectorAll('#reasonSection .reason-opt').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); pendingReason=btn.getAttribute('data-reason');});});
+    rebuildHourlyTable(); renderCustomReasons(); renderCustomReasons2(); if(!loadAllData()){updateFactFromHours(); calculateMaterialEnd();} startTimerIntervalFn(); updateTotalDowntimeUI(); updateBodyBackground(); renderStopsLog(); updateMaterialEndColor();
+
+    // Стикерометр
+    const kgInput=document.getElementById('stickerKg'), gramInput=document.getElementById('stickerGram');
+    const weightPerStickerInput=document.getElementById('weightPerSticker'), coreWeightInput=document.getElementById('coreWeight');
+    const remainingSpan=document.getElementById('stickerRemaining'), stickerMsg=document.getElementById('stickerMsg'), netWeightSpan=document.getElementById('netWeight');
+    function getCurrentWeightGrams(){let kg=parseFloat(kgInput.value)||0, g=parseFloat(gramInput.value)||0; if(g>=1000){let add=Math.floor(g/1000); kg+=add; g=g%1000; kgInput.value=kg; gramInput.value=g;} return (kg*1000)+g;}
+    function getWeightPerSticker(){let val=parseFloat(weightPerStickerInput.value); return (isNaN(val)||val<=0)?0.001:val;}
+    function getCoreWeight(){let val=parseFloat(coreWeightInput.value); return (isNaN(val)||val<0)?0:val;}
+    function calculateStickers(){let currentGram=getCurrentWeightGrams(), core=getCoreWeight(), weightOne=getWeightPerSticker(); let netGram=currentGram-core; let remaining=0, message=""; if(currentGram<=core){remaining=0; netGram=0; message=currentGram===0?"📭 Рулон пуст":"⚠️ Вес меньше или равен втулке → стикеров нет";}else if(netGram<=0){remaining=0; message="⚠️ Нетто-вес отсутствует → остаток 0";}else{const exact=netGram/weightOne; remaining=Math.floor(exact); if(remaining<0) remaining=0; message=remaining===0?"🔍 Масса нетто меньше веса 1 стикера":`✅ Остаток: ${remaining.toLocaleString()} шт. (нетто ${(netGram/1000).toFixed(3)} кг)`;} remainingSpan.innerText=remaining.toLocaleString()+' шт'; stickerMsg.innerText=message; netWeightSpan.innerText=(netGram/1000).toFixed(4);}
+    kgInput.addEventListener('input',()=>{calculateStickers(); localStorage.setItem('sticker_params',JSON.stringify({kg:kgInput.value,gram:gramInput.value,weight:weightPerStickerInput.value,core:coreWeightInput.value}));});
+    gramInput.addEventListener('input',()=>{calculateStickers(); localStorage.setItem('sticker_params',JSON.stringify({kg:kgInput.value,gram:gramInput.value,weight:weightPerStickerInput.value,core:coreWeightInput.value}));});
+    weightPerStickerInput.addEventListener('input',()=>{calculateStickers(); localStorage.setItem('sticker_params',JSON.stringify({kg:kgInput.value,gram:gramInput.value,weight:weightPerStickerInput.value,core:coreWeightInput.value}));});
+    coreWeightInput.addEventListener('input',()=>{calculateStickers(); localStorage.setItem('sticker_params',JSON.stringify({kg:kgInput.value,gram:gramInput.value,weight:weightPerStickerInput.value,core:coreWeightInput.value}));});
+    (function loadSticker(){const saved=localStorage.getItem('sticker_params'); if(saved){try{const p=JSON.parse(saved); kgInput.value=p.kg||5.66; gramInput.value=p.gram||0; weightPerStickerInput.value=p.weight||0.0366667; coreWeightInput.value=p.core||10; calculateStickers();}catch(e){}}else calculateStickers();})();
+
+    document.querySelectorAll('.tab-btn').forEach(btn=>{btn.addEventListener('click',()=>{const tab=btn.getAttribute('data-tab'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); if(tab==='khs') document.getElementById('khsTab').classList.add('active'); else document.getElementById('stickerTab').classList.add('active');});});
+})();
+</script>
+</body>
+</html>
